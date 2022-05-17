@@ -6,7 +6,7 @@ WIDTH = 1080
 HEIGHT = 720
 FPS = 20
 BG_COLOR = pygame.color.Color("#567890")
-HOST = '127.0.0.1'
+HOST = '137.184.86.45'
 PORT = 9000
 
 # pygame setup
