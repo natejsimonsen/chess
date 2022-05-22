@@ -34,7 +34,7 @@ class Grid(Client):
         self.color = pygame.color.Color("#a47449")
         self.offset_color = pygame.color.Color("#bd9573")
         self.highlight_color = pygame.color.Color("#999999")
-        self.bg_color = None
+        self.bg_color = pygame.color.Color("#000000")
         self.turn = "White"
         self.screen = screen
         self.highlighted_block = (-1, -1)
