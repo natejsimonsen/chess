@@ -5,8 +5,8 @@ from Grid import Grid
 WIDTH = 1080
 HEIGHT = 720
 FPS = 20
-BG_COLOR = pygame.color.Color("#567890")
 HOST = '137.184.86.45'
+#HOST = '127.0.0.1'
 PORT = 9000
 
 # pygame setup
@@ -34,6 +34,5 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             grid.on_click(event)
 
-    screen.fill(BG_COLOR)
     grid.draw_board()
     pygame.display.update()
