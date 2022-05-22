@@ -34,6 +34,7 @@ class Grid(Client):
         self.color = pygame.color.Color("#a47449")
         self.offset_color = pygame.color.Color("#bd9573")
         self.highlight_color = pygame.color.Color("#999999")
+        self.bg_color = None
         self.turn = "White"
         self.screen = screen
         self.highlighted_block = (-1, -1)
@@ -99,6 +100,10 @@ class Grid(Client):
         if "PlayerType:" == msg[:type_len]:
             player_type = msg[type_len:]
             self.type = player_type
+            if self.type == "White":
+                self.bg_color = pygame.color.Color("#567890")
+            else:
+                self.bg_color = pygame.color.Color("#a9876f")
 
         type_len = len("UpdateGame:")
         if "UpdateGame:" == msg[:type_len]:
@@ -107,34 +112,65 @@ class Grid(Client):
             self.turn = new_turn
 
     def draw_board(self):
-        for row in range(self.width):
-            for col in range(self.height):
-                width_offset, height_offset = self.offset_center
-                x, y = width_offset + col * self.square_size, height_offset + row * self.square_size
-                color = self.color if (row + col) % 2 != 0 else self.offset_color
+        self.screen.fill(self.bg_color)
+        if self.type == "White":
+            for row in range(self.width):
+                for col in range(self.height):
+                    width_offset, height_offset = self.offset_center
+                    x, y = width_offset + col * self.square_size, height_offset + row * self.square_size
+                    color = self.color if (row + col) % 2 != 0 else self.offset_color
 
-                # if the box is hovered
-                if row == self.highlighted_block[0] and col == self.highlighted_block[1]:
-                    color = self.highlight_color
+                    # if the box is hovered
+                    if row == self.highlighted_block[0] and col == self.highlighted_block[1]:
+                        color = self.highlight_color
 
-                # if the player is selected by the mouse
-                if row == self.selected_player[0] and col == self.selected_player[1]:
-                    color = self.highlight_color
+                    # if the player is selected by the mouse
+                    if row == self.selected_player[0] and col == self.selected_player[1]:
+                        color = self.highlight_color
 
-                cell = pygame.Rect(x, y, self.square_size, self.square_size)
-                pygame.draw.rect(self.screen, color, cell)
+                    cell = pygame.Rect(x, y, self.square_size, self.square_size)
+                    pygame.draw.rect(self.screen, color, cell)
 
-                if self.game[row][col]:
-                    image = self.images[self.game[row][col]]
-                    image_rect = image.get_rect(center=cell.center)
-                    self.screen.blit(image, image_rect)
+                    if self.game[row][col]:
+                        image = self.images[self.game[row][col]]
+                        image_rect = image.get_rect(center=cell.center)
+                        self.screen.blit(image, image_rect)
 
-                if (row, col) in self.valid_moves:
-                    pygame.draw.circle(self.screen, self.circle_color, cell.center, self.square_size // 6)
+                    if (row, col) in self.valid_moves:
+                        pygame.draw.circle(self.screen, self.circle_color, cell.center, self.square_size // 6)
 
-        # draw font for debug purposes
-        font_surface = self.tf.render(f"{self.turn}'s turn", True, (0, 0, 0))
-        self.screen.blit(font_surface, (10, 10))
+            # draw font for debug purposes
+            font_surface = self.tf.render(f"{self.turn}'s turn", True, (0, 0, 0))
+            self.screen.blit(font_surface, (10, 10))
+        elif self.type == "Black":
+            for row in range(self.width):
+                for col in range(self.height):
+                    width_offset, height_offset = self.offset_center
+                    x, y = width_offset + (7 - col) * self.square_size, height_offset + (7 - row) * self.square_size
+                    color = self.color if (row + col) % 2 != 0 else self.offset_color
+
+                    # if the box is hovered
+                    if row == self.highlighted_block[0] and col == self.highlighted_block[1]:
+                        color = self.highlight_color
+
+                    # if the player is selected by the mouse
+                    if row == self.selected_player[0] and col == self.selected_player[1]:
+                        color = self.highlight_color
+
+                    cell = pygame.Rect(x, y, self.square_size, self.square_size)
+                    pygame.draw.rect(self.screen, color, cell)
+
+                    if self.game[row][col]:
+                        image = self.images[self.game[row][col]]
+                        image_rect = image.get_rect(center=cell.center)
+                        self.screen.blit(image, image_rect)
+
+                    if (row, col) in self.valid_moves:
+                        pygame.draw.circle(self.screen, self.circle_color, cell.center, self.square_size // 6)
+
+            # draw font for debug purposes
+            font_surface = self.tf.render(f"{self.turn}'s turn", True, (0, 0, 0))
+            self.screen.blit(font_surface, (10, 10))
 
     def on_hover(self, event):
         """Handles pygame mousemotion event and highlights a cell"""
@@ -363,10 +399,14 @@ class Grid(Client):
         x, y = event.pos
         if pos := self.in_bounds(x, y):
             new_row, new_col = pos
-            if self.turn == "White":
+            if self.turn != self.type:
+                pass
+            elif self.turn == "White" and self.type == "White":
                 # if the piece is white
                 if self.game[new_row][new_col].isupper():
                     self.selected_player = pos
+                else:
+                    pass
 
                 # if the piece is a valid coordinate but doesn't do any player movement validation yet
                 if self.selected_player[0] != -1:
@@ -384,10 +424,13 @@ class Grid(Client):
                         self.valid_moves = []
                         self.turn = "Black"
                         self.write(f"UpdateGame:{json.dumps(self.game)}")
-            else:
+
+            elif self.turn == "Black" and self.type == "Black":
                 # if the piece is black
                 if self.game[new_row][new_col].islower():
                     self.selected_player = pos
+                else:
+                    pass
 
                 # if the piece is a valid coordinate but doesn't do any player movement validation yet
                 if self.selected_player[0] != -1:
